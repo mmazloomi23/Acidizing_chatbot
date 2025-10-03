@@ -1,5 +1,7 @@
 import streamlit as st
 import requests
+import faiss
+from langchain_community.vectorstores import FAISS
 from langchain.chains import RetrievalQA
 from langchain_openai import ChatOpenAI
 from openai import OpenAI
