@@ -14,7 +14,7 @@ from config.settings import APP_TITLE, LOGO_PATH, APP_URL
 load_dotenv()
 
 save_path="Acidizing_faiss_index"
-embeddings = OpenAIEmbeddings(model="text-embedding-3-large", api_key=os.getenv("OPENAI_API_KEY"))
+embeddings = OpenAIEmbeddings(model="text-embedding-3-large", api_key=os.getenv("OPENAI_API_KEY"),base_url=os.getenv("OPENAI_API_BASE", "https://api.avalai.ir/v1"))
 
 def load_faiss_index(save_path: str = "faiss_index"):
     vectorstore = FAISS.load_local(save_path, embeddings, allow_dangerous_deserialization=True)
