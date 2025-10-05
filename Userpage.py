@@ -34,10 +34,12 @@ faiss_retriever = faiss_vectorstore.as_retriever(scearch_type="mmr",search_kwarg
 llm = ChatOpenAI(model="gpt-4o-mini",base_url=os.getenv("OPENAI_API_BASE", "https://api.avalai.ir/v1"),
         api_key=os.getenv("OPENAI_API_KEY"),temperature=0)
 
+chain_typ = st.sidebar.selectbox("انتخاب استراتژی ترکیب اسناد و آماده سازی خروجی",
+                    ("stuff","refine"))
 qa_chain = RetrievalQA.from_chain_type(
     llm=llm,
     retriever=faiss_retriever,
-    chain_type="stuff",
+    chain_type=chain_typ,
     return_source_documents=True
 )
 
@@ -67,6 +69,14 @@ if "user_input" not in st.session_state:
 
 query = st.chat_input("👤 پیام شما:")
 st.session_state.user_input = query
+if query:
+    enhanced_query = f"""
+    {query}
+    
+    لطفاً پاسخ را کامل و جامع از اسناد استخراج شده تهیه کنید و به منبع وفادار باشید.
+    پاسخ ارائه شده اطلاعات کاملتری را نسبت به سوال مطرح شده ارائه کند و مطالبی که در اطراف موضوع اصلی وجود دارد را هم شامل بشود.
+    فقط از اطلاعات موجود در اسناد استفاده کنید.
+    """
 
 if st.session_state.user_input:
     st.session_state.messages.append({"role": "user", "content": st.session_state.user_input})
@@ -78,8 +88,8 @@ if st.session_state.user_input:
 
     with st.spinner("در حال پاسخ دادن..."):
         try:
-            docs = faiss_vectorstore.similarity_search(query, k=sk)
-            result = qa_chain.invoke({"query": query})  
+            docs = faiss_vectorstore.similarity_search(enhanced_query, k=sk)
+            result = qa_chain.invoke({"query": enhanced_query})  
 
             output_text = ""
             for doc in result["source_documents"]:
@@ -130,7 +140,7 @@ for msg in st.session_state.messages:
 
         st.markdown(50 * "=")
 
-if st.button("Clear"):
+if st.sidebar.button("Clear"):
     if "messages" in st.session_state:
         del st.session_state["messages"]
     st.rerun()
